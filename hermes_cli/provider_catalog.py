@@ -162,6 +162,23 @@ def provider_catalog() -> list[ProviderDescriptor]:
                 order=order,
             )
         )
+
+    # "custom" is a special provider (user-defined endpoints in config.yaml)
+    # that lives outside CANONICAL_PROVIDERS. It's always included so the
+    # provider picker and desktop UI show it alongside canonical providers.
+    out.append(
+        ProviderDescriptor(
+            slug="custom",
+            label="Custom endpoint",
+            description="User-defined API endpoint",
+            auth_type="local",
+            tab="keys",
+            api_key_env_vars=(),
+            base_url_env_var="",
+            signup_url="",
+            order=len(out),
+        )
+    )
     return out
 
 

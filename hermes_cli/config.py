@@ -894,6 +894,10 @@ def _ensure_hermes_home_managed(home: Path):
 
 DEFAULT_CONFIG = {
     "model": "",
+    # When True, the model picker (desktop app + TUI) only shows user-defined
+    # providers (custom endpoints, local GGUF proxies, etc.). Canonical
+    # aggregator rows (Nous Portal, OpenRouter, Anthropic, etc.) are hidden.
+    "model_local_only": False,
     "providers": {},
     "fallback_providers": [],
     "credential_pool_strategies": {},

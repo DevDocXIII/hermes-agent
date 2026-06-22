@@ -52,6 +52,7 @@ class ConfigContext:
     current_base_url: str
     user_providers: dict
     custom_providers: list
+    local_only: bool = False  # When True, filter out canonical/aggregator providers
 
     def with_overrides(
         self,
@@ -96,12 +97,14 @@ def load_picker_context() -> ConfigContext:
         current_provider = ""
         current_base_url = ""
     raw = cfg.get("providers")
+    local_only = bool(cfg.get("model_local_only", False))
     return ConfigContext(
         current_provider=current_provider,
         current_model=current_model,
         current_base_url=current_base_url,
         user_providers=raw if isinstance(raw, dict) else {},
         custom_providers=get_compatible_custom_providers(cfg),
+        local_only=local_only,
     )
 
 
@@ -219,6 +222,24 @@ def build_models_payload(
     if capabilities:
         _apply_capabilities(rows)
 
+    # ── local_only: hide canonical aggregator rows, keep only user-defined ──
+    # When True, the model picker shows only providers the user explicitly
+    # configured (custom endpoints, local GGUF proxies, etc.).  Canonical
+    # aggregator rows (Nous Portal, OpenRouter, etc.) are filtered out.
+    # Also keeps providers explicitly listed in ctx.user_providers
+    # (``providers:`` config dict) as a whitelist, so canonical slugs like
+    # ``deepseek`` that appear in ``providers:`` also survive the filter.
+    if ctx.local_only:
+        current = (ctx.current_provider or "").lower()
+        user_providers = set(
+            str(k).lower() for k in ctx.user_providers.keys()
+        ) if isinstance(ctx.user_providers, dict) else set()
+        rows = [
+            r for r in rows
+            if r.get("is_user_defined", False)
+            or r.get("slug", "").lower() == current
+            or r.get("slug", "").lower() in user_providers
+        ]
     return {
         "providers": rows,
         "model": ctx.current_model,
