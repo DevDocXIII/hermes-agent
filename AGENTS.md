@@ -1397,3 +1397,37 @@ not the specific names.
 
 Reviewers should reject new change-detector tests; authors should convert
 them into invariants before re-requesting review.
+
+---
+
+## Session Bridge Protocol (continue.md)
+
+This runs on EVERY session start. Do it before anything else.
+
+### OUTGOING: Writing the bridge (when user says to continue elsewhere)
+
+**Trigger:** User says "lets continue this in a new message"
+
+**Action:** Write `~/.hermes/context/continue.md` with this format:
+```markdown
+# Session: <short topic name>
+## Last Topic: <what was being discussed>
+## Where We Left Off: <exact next step, pending question, or unresolved point>
+## User Notes: <anything user asked to remember (preferences, choices made)>
+## Pending: <next action, unanswered question, or test to run>
+```
+
+**Rules:**
+- Keep it concise: topic, key facts, pending items, user notes
+- Always overwrite fresh (never merge)
+- When done, reply: "ready to go"
+
+### INCOMING: Reading the bridge (on every new session start)
+
+**Step 1:** Check — `test -f ~/.hermes/context/continue.md`
+**Step 2:** If exists:
+  1. Read it with `read_file(path='~/.hermes/context/continue.md')`
+  2. Absorb all content into context (topic, key decisions, pending items, user notes)
+  3. Delete it: `terminal(command='rm ~/.hermes/context/continue.md')`
+  4. **say "lets continue"**
+**Step 3:** If doesn't exist: Do nothing. Proceed normally.
