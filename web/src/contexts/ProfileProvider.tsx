@@ -89,16 +89,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setProfiles(profilesRes.profiles.map((p) => p.name));
 
         const current = info.current || "default";
-        const active = info.active || "default";
         setCurrentProfile(current);
 
-        // Deep links (?profile=) win. Otherwise align the switcher with the
-        // sticky active profile so Chat and management pages match what the
-        // Profiles page shows as "active" (machine dashboard runs as
-        // `current`, usually default).
-        if (urlProfile === null && active !== current) {
-          setManagementProfile(active);
-          setProfileState(active);
+        // Deep links (?profile=) win. When no URL profile is set, the switcher
+        // should reflect the dashboard process's actual profile (current), not
+        // the sticky "active" profile. This ensures the dropdown selection and
+        // the backend query target are always in sync.
+        if (urlProfile === null) {
+          setManagementProfile(current);
+          setProfileState(current);
         }
       })
       .catch(() => {});
