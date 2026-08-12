@@ -348,13 +348,10 @@ export function SidebarSessionsSection({
   // Pinned never virtualizes. Virtualization needs a bounded viewport to
   // measure against, and Pinned deliberately has none — however many chats you
   // pin, all of them render and the sidebar's own scroll carries the length.
-  const flatVirtualized =
-    !pinned &&
-    !showEmptyState &&
-    !groups?.length &&
-    !projectOverview?.length &&
-    !projectContent &&
-    sessions.length >= VIRTUALIZE_THRESHOLD
+  // Keep the flat session list in normal document flow. The virtualized path
+  // recalculates measured/unmeasured row heights during wheel scrolling and can
+  // send the sidebar into the intermediate-scroll jump state.
+  const flatVirtualized = false
 
   // First paint into the grouped view (e.g. the app restoring the Projects tab)
   // has flat recents in `sessions` but no tree yet. Show skeletons rather than
